@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include "API/Base.h"
 #include "Tools.h"
@@ -40,8 +41,8 @@ void GiveItemNum(RCONClientConnection* rconClientConnection, RCONPacket* rconPac
 			aShooterPC->GiveItemNum(itemId, quantity, quality, forceBP);
 
 			// Send a reply
-			FString reply = L"Successfully gave items\n";
-			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+			std::string reply = "Successfully gave items\n";
+			SendRconReply(rconClientConnection, rconPacket->Id, reply);
 		}
 	}
 }
@@ -80,8 +81,8 @@ void GiveItem(RCONClientConnection* rconClientConnection, RCONPacket* rconPacket
 			aShooterPC->GiveItem(&bpPath, quantity, quality, forceBP);
 
 			// Send a reply
-			FString reply = L"Successfully gave items\n";
-			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+			std::string reply = "Successfully gave items\n";
+			SendRconReply(rconClientConnection, rconPacket->Id, reply);
 		}
 	}
 }
@@ -118,8 +119,8 @@ void AddExperience(RCONClientConnection* rconClientConnection, RCONPacket* rconP
 			aShooterPC->AddExperience(howMuch, fromTribeShare, bPreventSharing);
 
 			// Send a reply
-			FString reply = L"Successfully added experience\n";
-			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+			std::string reply = "Successfully added experience\n";
+			SendRconReply(rconClientConnection, rconPacket->Id, reply);
 		}
 	}
 }
@@ -156,8 +157,8 @@ void SetPlayerPos(RCONClientConnection* rconClientConnection, RCONPacket* rconPa
 			aShooterPC->SetPlayerPos(x, y, z);
 
 			// Send a reply
-			FString reply = L"Successfully teleported player\n";
-			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+			std::string reply = "Successfully teleported player\n";
+			SendRconReply(rconClientConnection, rconPacket->Id, reply);
 		}
 	}
 }
@@ -188,11 +189,10 @@ void GetPlayerPos(RCONClientConnection* rconClientConnection, RCONPacket* rconPa
 			FVector pos = aShooterPC->GetDefaultActorLocationField();
 
 			// Send a reply
-			wchar_t buffer[256];
-			swprintf_s(buffer, TEXT("%s\n"), *pos.ToString());
+			std::stringstream ss;
+			ss << std::setprecision(3) << std::fixed << "X=" << pos.X << " Y=" << pos.Y << " Z=" << pos.Z << std::endl;
 
-			FString reply(buffer);
-			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+			SendRconReply(rconClientConnection, rconPacket->Id, ss.str());
 		}
 	}
 }
@@ -223,8 +223,8 @@ void KillPlayer(RCONClientConnection* rconClientConnection, RCONPacket* rconPack
 			aShooterPC->GetPlayerCharacter()->Suicide();
 
 			// Send a reply
-			FString reply = L"Successfully killed player\n";
-			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+			std::string reply = "Successfully killed player\n";
+			SendRconReply(rconClientConnection, rconPacket->Id, reply);
 		}
 	}
 }
@@ -261,8 +261,8 @@ void TeleportToPlayer(RCONClientConnection* rconClientConnection, RCONPacket* rc
 				cheatManager->TeleportToPlayer(aShooterPC2->GetLinkedPlayerIDField());
 
 				// Send a reply
-				FString reply = L"Successfully teleported player\n";
-				rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+				std::string reply = "Successfully teleported player\n";
+				SendRconReply(rconClientConnection, rconPacket->Id, reply);
 			}
 		}
 	}
@@ -354,11 +354,10 @@ void GetTribeIdOfPlayer(RCONClientConnection* rconClientConnection, RCONPacket* 
 		AShooterGameMode* gameMode = Ark::GetGameMode();
 		int tribeId = gameMode->GetTribeIDOfPlayerID(playerId);
 
-		wchar_t buffer[256];
-		swprintf_s(buffer, TEXT("Tribe ID - %d\n"), tribeId);
+		std::stringstream ss;
+		ss << "Tribe ID - " << tribeId << std::endl;
 
-		FString reply(buffer);
-		rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+		SendRconReply(rconClientConnection, rconPacket->Id, ss.str());
 	}
 }
 
@@ -397,8 +396,8 @@ void SpawnDino(RCONClientConnection* rconClientConnection, RCONPacket* rconPacke
 				dino->BeginPlay();
 
 				// Send a reply
-				FString reply = L"Successfully spawned dino\n";
-				rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+				std::string reply = "Successfully spawned dino\n";
+				SendRconReply(rconClientConnection, rconPacket->Id, reply);
 			}
 		}
 	}
@@ -435,8 +434,8 @@ void SpawnTamed(RCONClientConnection* rconClientConnection, RCONPacket* rconPack
 			cheatManager->GMSummon(&className, dinoLvl);
 
 			// Send a reply
-			FString reply = L"Successfully spawned dino\n";
-			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+			std::string reply = "Successfully spawned dino\n";
+			SendRconReply(rconClientConnection, rconPacket->Id, reply);
 		}
 	}
 }
@@ -487,59 +486,59 @@ void SpawnAtPos(RCONClientConnection* rconClientConnection, RCONPacket* rconPack
 				dino->BeginPlay();
 
 				// Send a reply
-				FString reply = L"Successfully spawned dino\n";
-				rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+				std::string reply = "Successfully spawned dino\n";
+				SendRconReply(rconClientConnection, rconPacket->Id, reply);
 			}
 		}
 	}
 }
 
-void GetTribeLog(RCONClientConnection* rconClientConnection, RCONPacket* rconPacket, UWorld* uWorld)
-{
-	FString msg = rconPacket->Body;
-
-	TArray<FString> Parsed;
-	msg.ParseIntoArray(&Parsed, L" ", true);
-
-	if (Parsed.IsValidIndex(1))
-	{
-		__int64 tribeId;
-
-		try
-		{
-			tribeId = std::stoull(*Parsed[1]);
-		}
-		catch (const std::exception&)
-		{
-			return;
-		}
-
-		FTribeData* tribeData = new FTribeData();
-		Ark::GetGameMode()->GetTribeData(tribeData, tribeId);
-
-		if (tribeData)
-		{
-			std::stringstream ss;
-
-			auto logs = tribeData->GetTribeLogField();
-			for (uint32_t i = 0; i < logs.Num(); i++)
-			{
-				auto log = logs[i];
-
-				ss << log.ToString() << "\n";
-			}
-
-			wchar_t* wcstring = ConvertToWideStr(ss.str());
-
-			FString reply(wcstring);
-			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
-
-			delete[] wcstring;
-		}
-
-		delete tribeData;
-	}
-}
+//void GetTribeLog(RCONClientConnection* rconClientConnection, RCONPacket* rconPacket, UWorld* uWorld)
+//{
+//	FString msg = rconPacket->Body;
+//
+//	TArray<FString> Parsed;
+//	msg.ParseIntoArray(&Parsed, L" ", true);
+//
+//	if (Parsed.IsValidIndex(1))
+//	{
+//		__int64 tribeId;
+//
+//		try
+//		{
+//			tribeId = std::stoull(*Parsed[1]);
+//		}
+//		catch (const std::exception&)
+//		{
+//			return;
+//		}
+//
+//		FTribeData* tribeData = new FTribeData();
+//		Ark::GetGameMode()->GetTribeData(tribeData, tribeId);
+//
+//		if (tribeData && tribeData->GetTribeIDField())
+//		{
+//			std::stringstream ss;
+//
+//			auto logs = tribeData->GetTribeLogField();
+//			for (uint32_t i = 0; i < logs.Num(); i++)
+//			{
+//				auto log = logs[i];
+//
+//				ss << log.ToString() << "\n";
+//			}
+//
+//			wchar_t* wcstring = ConvertToWideStr(ss.str());
+//
+//			FString reply(wcstring);
+//			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+//
+//			delete[] wcstring;
+//		}
+//
+//		delete tribeData;
+//	}
+//}
 
 void GetDinoPos(RCONClientConnection* rconClientConnection, RCONPacket* rconPacket, UWorld* uWorld)
 {
@@ -568,11 +567,16 @@ void GetDinoPos(RCONClientConnection* rconClientConnection, RCONPacket* rconPack
 		{
 			FVector pos = dino->GetRootComponentField()->GetRelativeLocationField();
 
-			wchar_t buffer[256];
+			/*wchar_t buffer[256];
 			swprintf_s(buffer, TEXT("%s\n"), *pos.ToString());
 
 			FString reply(buffer);
-			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);*/
+
+			std::stringstream ss;
+			ss << std::setprecision(3) << std::fixed << "X=" << pos.X << " Y=" << pos.Y << " Z=" << pos.Z << std::endl;
+
+			SendRconReply(rconClientConnection, rconPacket->Id, ss.str());
 		}
 	}
 }
@@ -613,8 +617,8 @@ void SetDinoPos(RCONClientConnection* rconClientConnection, RCONPacket* rconPack
 
 			dino->TeleportTo(&pos, &rot, true, false);
 
-			FString reply = L"Successfully teleported dino\n";
-			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+			std::string reply = "Successfully teleported dino\n";
+			SendRconReply(rconClientConnection, rconPacket->Id, reply);
 		}
 	}
 }
@@ -648,8 +652,8 @@ void AddDinoExperience(RCONClientConnection* rconClientConnection, RCONPacket* r
 		{
 			dino->GetMyCharacterStatusComponentField()->AddExperience(howMuch, false, EXPType::XP_GENERIC);
 
-			FString reply = L"Successfully added experience to dino\n";
-			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+			std::string reply = "Successfully added experience to dino\n";
+			SendRconReply(rconClientConnection, rconPacket->Id, reply);
 		}
 	}
 }
@@ -681,8 +685,8 @@ void KillDino(RCONClientConnection* rconClientConnection, RCONPacket* rconPacket
 		{
 			dino->Suicide();
 
-			FString reply = L"Killed dino\n";
-			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+			std::string reply = "Killed dino\n";
+			SendRconReply(rconClientConnection, rconPacket->Id, reply);
 		}
 	}
 }
@@ -737,8 +741,8 @@ void UnlockEngram(RCONClientConnection* rconClientConnection, RCONPacket* rconPa
 			cheatManager->UnlockEngram(&bpPath);
 
 			// Send a reply
-			FString reply = L"Successfully unlocked engram\n";
-			rconClientConnection->SendMessageW(rconPacket->Id, 0, &reply);
+			std::string reply = "Successfully unlocked engram\n";
+			SendRconReply(rconClientConnection, rconPacket->Id, reply);
 		}
 	}
 }
@@ -749,15 +753,15 @@ void Init()
 	Ark::AddRconCommand(L"GiveItem", &GiveItem);
 	Ark::AddRconCommand(L"AddExperience", &AddExperience);
 	Ark::AddRconCommand(L"SetPlayerPos", &SetPlayerPos);
-	Ark::AddRconCommand(L"GetPlayerPos ", &GetPlayerPos);
-	Ark::AddRconCommand(L"KillPlayer ", &KillPlayer);
+	Ark::AddRconCommand(L"GetPlayerPos", &GetPlayerPos);
+	Ark::AddRconCommand(L"KillPlayer", &KillPlayer);
 	Ark::AddRconCommand(L"TeleportToPlayer", &TeleportToPlayer);
 	Ark::AddRconCommand(L"ListPlayerDinos", &ListPlayerDinos);
 	Ark::AddRconCommand(L"GetTribeIdOfPlayer", &GetTribeIdOfPlayer);
 	Ark::AddRconCommand(L"SpawnDino", &SpawnDino);
 	Ark::AddRconCommand(L"SpawnTamed", &SpawnTamed);
 	Ark::AddRconCommand(L"SpawnAtPos", &SpawnAtPos);
-	Ark::AddRconCommand(L"GetTribeLog", &GetTribeLog);
+	/*Ark::AddRconCommand(L"GetTribeLog", &GetTribeLog);*/
 	Ark::AddRconCommand(L"GetDinoPos", &GetDinoPos);
 	Ark::AddRconCommand(L"SetDinoPos", &SetDinoPos);
 	Ark::AddRconCommand(L"AddDinoExperience", &AddDinoExperience);

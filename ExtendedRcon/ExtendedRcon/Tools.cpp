@@ -35,3 +35,13 @@ wchar_t* ConvertToWideStr(const std::string& str)
 
 	return wcstring;
 }
+
+void SendRconReply(RCONClientConnection* rconClientConnection, int rconPacketId, std::string message, int type)
+{
+	wchar_t* wcstring = ConvertToWideStr(message);
+
+	FString reply(wcstring);
+	rconClientConnection->SendMessageW(rconPacketId, type, &reply);
+
+	delete[] wcstring;
+}

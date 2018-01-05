@@ -47,3 +47,4 @@ void SendChatMessage(AShooterPlayerController* playerController, const FString& 
 
 AShooterPlayerController* FindPlayerControllerFromSteamId(unsigned __int64 steamId);
 wchar_t* ConvertToWideStr(const std::string& str);
+void SendRconReply(RCONClientConnection* rconClientConnection, int rconPacketId, std::string message, int type = 0);
